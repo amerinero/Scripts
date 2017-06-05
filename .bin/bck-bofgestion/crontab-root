@@ -1,0 +1,38 @@
+#ident	"@(#)root	1.21	04/03/23 SMI"
+#
+# The root crontab should be used to perform accounting data collection.
+#
+#
+10 3 * * * /usr/sbin/logadm
+15 3 * * 0 /usr/lib/fs/nfs/nfsfind
+30 3 * * * [ -x /usr/lib/gss/gsscred_clean ] && /usr/lib/gss/gsscred_clean
+0,15,30,45 * * * * /HORCM/scripts/estado_replicas >> /var/log/HITACHI/replicacion/estado
+#10 3 * * * /usr/lib/krb5/kprop_script ___slave_kdcs___
+0,5,10,15,20,25,30,35,40,45,50,55 * * * * /export/home/ieci/rendimiento/proc_mem.ksh
+0,5,10,15,20,25,30,35,40,45,50,55 * * * * /export/home/ieci/rendimiento/proc_cpu.ksh
+0,10,20,30,40,50 * * * * /var/tmp/salida-ps.ksh
+#
+# Recoleccion diaria de los datos de todo el mes actual 
+#
+35 23 * * * /local3/rendimiento/gcapacidad/bin/LauncherRecollect.sh /local3/rendimiento/gcapacidad/etc/lista-todas-fisicas-solaris solaris mensual
+42 23 * * * /local3/rendimiento/gcapacidad/bin/LauncherRecollect.sh /local3/rendimiento/gcapacidad/etc/lista-todas-fisicas-linux linux mensual
+45 23 * * * /local3/rendimiento/gcapacidad/bin/LauncherzoneRecollect.sh /local3/rendimiento/gcapacidad/etc/pool-z
+15 0 * * * /local3/rendimiento/gcapacidad/bin/packager.sh mensual
+15 0 * * * /local3/rendimiento/gcapacidad/bin/packager.sh zonas
+#
+# Recoleccion de datos para historicos, solo el ultimo dia del mes.
+#
+45 23 * * * /local3/rendimiento/gcapacidad/bin/lastdayofmonth.sh && /local3/rendimiento/gcapacidad/bin/LauncherRecollect.sh /local3/rendimiento/gcapacidad/etc/lista-todas-fisicas-solaris solaris hist
+47 23 * * * /local3/rendimiento/gcapacidad/bin/lastdayofmonth.sh && /local3/rendimiento/gcapacidad/bin/LauncherRecollect.sh /local3/rendimiento/gcapacidad/etc/lista-todas-fisicas-linux linux hist
+15 0 * * * /local3/rendimiento/gcapacidad/bin/packager.sh hist
+#
+# Informes. Se basan en los datos de /local3/rendimiento/gcapacidad/data/mensual
+#
+55 23 * * * /local3/rendimiento/gcapacidad/bin/info_mediaCPUMEM.sh
+55 23 * * * /local3/rendimiento/gcapacidad/bin/info_oc_filesystems.sh
+55 23 * * * /local3/rendimiento/gcapacidad/bin/info_all_filesystems.sh
+55 23 * * * /local3/rendimiento/gcapacidad/bin/info_peaks_cpu.sh
+55 23 * * * /local3/rendimiento/gcapacidad/bin/info_peaks_mem.sh
+55 23 * * * /local3/rendimiento/gcapacidad/bin/info_zonasmediaCPUMEM.sh
+58 23 * * * /local3/rendimiento/gcapacidad/bin/BuildInfoIndex.sh
+15 0 * * * /local3/rendimiento/gcapacidad/bin/packager.sh informes

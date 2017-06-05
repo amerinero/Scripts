@@ -1,0 +1,19 @@
+#set terminal jpeg size 800,600
+set terminal jpeg interlace large size 800,600
+set multiplot
+set datafile separator ";"
+set decimalsign ","
+set locale "C"
+set yrange [0:100]
+set ylabel "% Memoria"
+set xdata time
+set xlabel "Dia"
+set timefmt "%b %d %H:%M:%S"
+set format x "%b %d"
+set xtics 86400
+set grid xtics
+set origin 0.0,0.0
+set size 1,0.4
+set bmargin 3
+set tmargin 0
+plot \

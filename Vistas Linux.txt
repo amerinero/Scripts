@@ -1,0 +1,30 @@
+Vistas Linux
+
+CPU
+---
+CREATE VIEW 'CPU_gest' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%guest';
+CREATE VIEW 'CPU_idle' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%idle';
+CREATE VIEW 'CPU_iowait' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%iowait';
+CREATE VIEW 'CPU_irq' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%irq';
+CREATE VIEW 'CPU_nice' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%nice';
+CREATE VIEW 'CPU_soft' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%soft';
+CREATE VIEW 'CPU_steal' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%steal';
+CREATE VIEW 'CPU_sys' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%sys';
+CREATE VIEW 'CPU_usr' AS SELECT Date,Value FROM SARDATA WHERE Device='CPU-all' AND Parameter='%usr';
+
+
+MEM
+---
+
+CREATE VIEW 'MEM_used' AS SELECT Date,Value FROM SARDATA WHERE Device='MEM' AND Parameter='%memused';
+
+select Date,round(Value*(select Pagesize from SERVINFO)/1024/1024/(select Memsize from SERVINFO)*100,2) from view_MEM_freemem;
+select Date,round(Value*(select Pagesize from SERVINFO)/1024/1024/(select Memsize from SERVINFO)*100,2) from view_MEM_slots;
+select Date,round(100-Value,2) from view_MEM_memused;
+
+NET
+---
+CREATE VIEW 'ETH0_used' AS SELECT Date,Value FROM SARDATA WHERE Device='MEM' AND Parameter='%memused'
+
+
+-adobe-helvetica-bold-r-*-*-18-*-*-*-*-*-*-*

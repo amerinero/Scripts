@@ -1,0 +1,9 @@
+set ylabel "% CPU"
+set yrange [0:100]
+set origin 0.0,0.4
+set size 1,0.6
+set format x ""
+set xlabel ""
+set bmargin 0
+set tmargin 1
+plot \

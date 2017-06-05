@@ -1,0 +1,84 @@
+Sar Recollector
+---------------
+
+Un linux con 1 disco, 1 red y 2 cpu == 102 entradas por muestra sar.
+
+Sar cada 5 minutos => 288 muestras diarias.
+
+Entradas/dia = 288 * 102 = 29376
+
+Un Solaris con 1disco + 1nfs, 1 red == 99 entradas por muestra sar
+Entradas / dia = 288 * 99 = 28512
+
+CREATE TABLE SERVERS (Serverid INTEGER PRIMARY KEY,
+                      Sysname VARCHAR(30),
+                      Dadded DATE,
+                      Ip VARCHAR(15),
+                      ConString TEXT);
+
+INSERT INTO SERVERS (Sysname,Ip,ConString) VALUES ('OpenSuSE11','10.226.53.157',NULL);
+
+                      
+CREATE TRIGGER insert_Dadded AFTER INSERT ON SERVERS
+BEGIN
+  UPDATE SERVERS SET Dadded = DATETIME('NOW')  WHERE rowid = new.rowid;
+END;
+
+
+Por cada entrada en SERVER existira una tabla DATA_Serverid que contendra los datos de ese Serverid.
+                    
+CREATE TABLE DATA_Serverid (Fecha DATE, 
+                            Device VARCHAR(20), 
+                            Parameter VARCHAR(20), 
+                            Value REAL);
+
+CREATE TABLE DATA_Serverid (Fecha DATE,Device VARCHAR(20),Parameter VARCHAR(20),Value REAL);                            
+
+CREATE TABLE SYSDATA (Fecha DATE,
+                     Sysname VARCHA(30), 
+                     Device VARCHAR(20), 
+                     Parameter VARCHAR(20), 
+                     Value REAL);
+                     
+select strftime('%Y-%m-%d-%H:%M:%S',Fecha),Value from SYSDATA where Device='IFACE-eth0' and Parameter='rxkB/s';
+
+select Sysname,Device,Parameter,avg(value) from SYSDATA group by Sysname,Device,Parameter;
+
+
+sqlite3 -separator ' ' mayo.db "select strftime('%Y-%m-%d-%H:%M:%S',Fecha),Value from SYSDATA where Device='IFACE-eth0' and Parameter='txkB/s' and Fecha between '2010-05-05 00:00:00' and '2010-05-08 00:00:00';" > txkb.dat
+
+%guest|0.0
+%idle|0.297282343368592
+%iowait|0.000740439381611066
+%irq|0.00349064279902356
+%nice|99.6243694060208
+%soft|0.0120097640358013
+%steal|0.0
+%sys|0.0484214808787627
+%usr|0.0122538649308379
+
+
+set terminal x11
+set multiplot
+set xdata time
+set timefmt "%H:%M:%S"
+set yrange  [0:100]
+set grid xtics
+set grid ytics
+set ylabel "% memused"
+set size 1,0.4
+set origin 0.0,0.0
+plot "sar-r.dat" using 1:4 title "%memused" smooth csplines
+set ylabel "CPU use"
+set size 1,0.6
+set origin 0.0,0.4
+plot \
+  "sar-u.dat" using 1:3 title "%user" smooth csplines,\
+  "sar-u.dat" using 1:4 title "%nice" smooth csplines,\
+  "sar-u.dat" using 1:5 title "%system" smooth csplines,\
+  "sar-u.dat" using 1:6 title "%iowait" smooth csplines,\
+  "sar-u.dat" using 1:7 title "%steal" smooth csplines,\
+  "sar-u.dat" using 1:8 title "%idle" smooth csplines
+set nomultiplot
+pause -1
+%memused

@@ -1,0 +1,34 @@
+App
+---
+
+Diseño aplicacion para gest. capacidad:
+
+Contamos con los filtros awk para solaris, linux y AIX.
+
+- Recoger los datos de una lista de máquinas. etc/lista
+
+- etc/lista debe contener nombre ó IP + Sist. Op.
+ 
+- Una bbdd sqlite por máquina. data/nombre_maq.db
+Estimacion de tamaños. Posibilidad de guardar db comprimida.
+
+- Todas las bbdd contienen tan solo una tabla llamada SARDATA con el formato fijado en los filtros awk.
+
+- 1 script lanzar en paralelo la recolección de datos diarios. recoger con el cron Paralelo.  bin/LaunchRecollectP.sh sin parametros. Se lanzará desde el cron a las 23:30 p.e.
+
+- 1 script con nombre máquina con parametro para recoger los datos diarios, un sar -A normal. Debe encargarse de crear la tabla sardata y el fichero de bbdd si no existe para algun servidor. Pensado para ejecuatarse entre las 23:30 y las 00:00. bin/Recollect.sh. Se llamará a este script desde LaunchRecollectP.sh  
+
+- 1 script para introducir datos manualmente desde un archivo. Debe encargarse de crear la tabla sardata y el fichero de bbdd si no existe para el servidor.
+
+- Ciclo de vida de los datos. Deben ser eliminados tras un tiempo. Script para eliminar datos mas antiguos de 3 meses p.e.
+2 scripts: 1 lanzador en paralelo (bin/LauncherDBcleanP.sh) + script que realiza el curro (bin/DBclean.sh).
+
+- Graficas con GNUplot.
+
+* Usando selects y gnuplot. Salida en formato jpeg. 
+
+- Generador de informes.
+
+* Usando selects y tablas csv y html. Filtro csv2HTML.awk
+
+ 

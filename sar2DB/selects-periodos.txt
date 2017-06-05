@@ -1,0 +1,31 @@
+
+- Mes pasado
+
+select * from SARDATA where strftime("%m",Date) = strftime("%m",date('now', '-1month'));
+
+-Mes del dia de ayer
+
+select * from SARDATA where strftime("%m",Date) = strftime("%m",date('now', '-1day'));
+
+-Mes actual
+select * from SARDATA where strftime("%m",Date) = strftime("%m",'now');
+
+- Semana pasada
+select * from SARDATA where strftime("%W",Date) = strftime("%W",date('now', '-7days'));
+
+- Ultimos 3 dias completos. (hoy NO, ayer SI, antes de ayer SI, antes antes de ayer SI)
+select * from SARDATA where strftime("%d",Date) between strftime("%d",'now', '-3days') and strftime("%d",'now', '-1day');
+
+- Dia de ayer
+
+select * from SARDATA where date(Date) = date('now', '-1day'));
+
+- Dia de hoy
+select * from SARDATA where strftime("%d",Date) = strftime("%d",'now');
+
+- Ultimas 24h
+select * from SARDATA where Date > Datetime('now', '-1day');
+
+- Ultimas 12h
+select * from SARDATA where Date > Datetime('now', '-12hours');
+ 
