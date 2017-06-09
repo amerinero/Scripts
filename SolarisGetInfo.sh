@@ -10,6 +10,9 @@ echo "--- format" >> $FILEOUT
 format << EOL >> $FILEOUT
 EOL
 echo "-------------------------------------------------------------------" >> $FILEOUT
+echo "--- fcinfo hba-port (HBAs)" >> $FILEOUT
+fcinfo hba-port >> $FILEOUT
+echo "-------------------------------------------------------------------" >> $FILEOUT
 echo "--- zpool list" >> $FILEOUT
 zpool list >> $FILEOUT
 echo "-------------------------------------------------------------------" >> $FILEOUT
@@ -89,5 +92,15 @@ for LDOM in `ldm ls | grep -v NAME | awk '{print $1}'`
 do
   echo "--- ldm ls -l $LDOM" >> $FILEOUT
   ldm ls -l $LDOM >> $FILEOUT
+  echo "-------------------------------------------------------------------" >> $FILEOUT
+done
+
+echo "*******************************************************************" >> $FILEOUT
+echo "*** PATHs de discos ***" >> $FILEOUT
+echo "*******************************************************************" >> $FILEOUT
+for DISCO in `ls /dev/rdsk/*s2`
+do
+  echo "--- luxadm display $DISCO" >> $FILEOUT
+  luxadm display $DISCO >> $FILEOUT
   echo "-------------------------------------------------------------------" >> $FILEOUT
 done
