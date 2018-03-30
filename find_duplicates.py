@@ -6,6 +6,7 @@ import argparse
 
 #
 # Función para obtener el hash de un fichero
+# La he cogido de Internet ... 
 #
 def hashfile(path, blocksize = 65536):
     afile = open(path, 'rb')
@@ -83,22 +84,27 @@ else:
 # Si no esta el fichero llamamos a la función init_FotoDepot que recorrera
 # todas las fotos de plibrary_path calculando el hash y almacenandolo en 
 # FotoDepot.
+# Si usamos la opción --init inicializará el fichero si, o si.
 #
 FotoDepot={}
-filedepot=os.path.join(plibrary_path,'FotoDepot.dict')
-if os.access(filedepot,os.R_OK):
-	print ('DEBUG: Fichero con diccionario encontrado')
-	with open(filedepot) as fdepot:
-		FotoDepot=json.load(fdepot)
-		print ('DEBUG: Fichero con diccionario cargado. %d elementos en FotoDepot' % (len(FotoDepot)))
-else:
+if args.init:
 	init_FotoDepot(FotoDepot,plibrary_path)
+else:	
+	filedepot=os.path.join(plibrary_path,'FotoDepot.dict')
+	if os.access(filedepot,os.R_OK):
+		print ('Fichero con diccionario encontrado')
+		with open(filedepot) as fdepot:
+			FotoDepot=json.load(fdepot)
+		print ('Fichero con diccionario cargado. %d elementos en FotoDepot' % (len(FotoDepot)))
+	else:
+		init_FotoDepot(FotoDepot,plibrary_path)
 
-
-
+#
+# Ahora vamos recorriendo la carpeta de fotos nuevas 
+# calculando el hash de cada una y mirando si ya esta en FotoDepot
+#
 FotosSinClas = os.listdir(unsort_folder)
 print ('Numero de archivos en %s == %d' % (unsort_folder,len(FotosSinClas)))
-
 for file in FotosSinClas:
 	filepath = os.path.join(unsort_folder,file)
 	print (filepath)
@@ -107,4 +113,5 @@ for file in FotosSinClas:
 		print ('DUPLICADO!!!!! --> %s == %s' % (filepath,FotoDepot[filehash]))
 		with open('dups.txt','a') as dupis:
 			dupis.write('DUPLICADO!!!!! --> %s == %s\n' % (filepath,FotoDepot[filehash]))
-		#os.remove(filepath)
+		if args.delete:
+			os.remove(filepath)
