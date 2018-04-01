@@ -24,9 +24,12 @@ def hashfile(path, blocksize = 65536):
 #
 def init_FotoDepot(depot,folder):
 	for dirName, subdirs, fileList in os.walk(folder):
-		for file in fileList:
+		print ('Escaneando %s ... %d ficheros ... ' % (dirName,len(fileList)))
+		for num, file in enumerate(fileList):
 			filepath=os.path.join(dirName,file)
-			print (filepath)
+			porcentaje = ((num + 1) / len(fileList)) * 100
+			if (round(porcentaje,1) % 10) == 0:
+				print ('%d%%' % (round(porcentaje,1)))
 			filehash=hashfile(filepath)
 			if filehash in depot:
 				print ('DUPLICADO INTERNO !!!!! --> %s == %s' % (filepath,depot[filehash]))
@@ -39,7 +42,6 @@ def init_FotoDepot(depot,folder):
 	with open(outFotoDepot,'w') as fileout:
 		json.dump(depot,fileout)
 	return(len(depot))
-
 
 #
 # Programa principal
