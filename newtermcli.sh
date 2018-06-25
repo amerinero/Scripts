@@ -14,7 +14,7 @@ then
 else
 	USERIP=$arg3
 fi
-COMANDO="gnome-terminal --window-with-profile=cliente -x script -a -f -q -c \"ssh $DESTINO\" $HOME/.termlogs/${DIA}_${USERIP}.log"
+COMANDO="gnome-terminal --window-with-profile=cliente -- script -a -f -q -c \"ssh $DESTINO\" $HOME/.termlogs/${DIA}_${USERIP}.log"
 
 #if [ $2 ];
 #then
