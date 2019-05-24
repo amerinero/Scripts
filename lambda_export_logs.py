@@ -7,28 +7,11 @@ import datetime
 # 
 # Argumentos:
 #   Nombre del grupo de logs
-#   Desde --> Fecha en segundos (date +%%s) desde la cual queremos los logs
-#   Hasta --> Fecha en segundos (date +%%s) hasta la cual queremos los logs
-# con import time
-    # Por ejemplo:
-    # >>> t = time.strptime("20 Feb 2019 10:00:00", "%d %b %Y %H:%M:%S")
-    # >>> time.strftime('%s',t)
-    # '1550653200' <-- Este es el valor que hay que pasar
-    #
-    # Otro ejemplo: fecha actual
-    # >>> int(time.time())
-    # 1558606299
-# Con datetime
-    # datetime.datetime(year, month, day, hour=0, minute=0, second=0, microsecond=0, tzinfo=None, *, fold=0)
-    # Por Ejemplo:
-    # >>> dt=datetime.datetime(2019,5,20)
-    # >>> int(dt.timestamp())
-    # 1558303200
-# Otro ejemplo con datetime
-    # Desde = datetime.datetime(2019, 5, 20)
-    # Hasta = Desde + datetime.timedelta(hours=24)
-    # Desde_secs = int(Desde.timestamp())
-    # Hasta_secs = int(Hasta.timestamp())
+#   Desde --> datetime.datetime
+#   Hasta --> datetime.datetime
+# Por ejemplo:
+#     Hasta = datetime.datetime.now()
+#     Desde = datetime.datetime.now() - datetime.timedelta(days=7)
 
 def CWL2file(Log_Group_Name, Desde, Hasta, outfile):
     
@@ -53,8 +36,8 @@ def CWL2file(Log_Group_Name, Desde, Hasta, outfile):
     
     # Hay que multiplicar por mil los valores que nos hayan pasado en Desde y Hasta para ponerlos
     # en milisegundos.
-    miliDesde = int(Desde) * 1000
-    miliHasta = int(Hasta) * 1000
+    miliDesde = int(Desde.timestamp()) * 1000
+    miliHasta = int(Hasta.timestamp()) * 1000
 
     process_streams = []
 
@@ -102,54 +85,26 @@ def CWL2file(Log_Group_Name, Desde, Hasta, outfile):
 
 
 def lambda_handler(event, context):
+    Log_streams = event['log_streams']
+    S3params = event['s3_params']
     Hasta = datetime.datetime.now()
-    Desde = datetime.datetime.now() - datetime.timedelta(days=7)
-    Desde_secs = int(Desde.timestamp())
-    Hasta_secs = int(Hasta.timestamp())
-    nsemana = Desde.strftime('%V')
+    Desde = datetime.datetime.now() - datetime.timedelta(days=1)
+    Ayer = Desde.strftime('%Y-%m-%d')
     anio = Desde.strftime('%G')
-    s3bucket = "registros-logs-koibox"
+    s3bucket = S3params['S3Bucket']
     #s3prefix = "autoescalado/"+anio+"/"
-    s3prefix = "prueba/"
+    s3prefix = S3params['S3Prefix']
     osprefix = "/tmp/"
-    cwl_groups = [
-        "/aws/elasticbeanstalk/koiboxcrm-prod/var/log/httpd/access_log",
-        "/aws/elasticbeanstalk/koiboxcrm-prod/var/log/httpd/error_log",
-        "/aws/elasticbeanstalk/prod/var/app/current/var/logs/prod.log",
-        "/aws/elasticbeanstalk/koiboxcrm-prod/var/log/eb-activity.log",
-        "/aws/elasticbeanstalk/koiboxcrm-preprod/var/log/httpd/access_log",
-        "/aws/elasticbeanstalk/koiboxcrm-preprod/var/log/httpd/error_log",
-        "/aws/elasticbeanstalk/preprod/var/app/current/var/logs/prod.log",
-        "/aws/elasticbeanstalk/koiboxcrm-preprod/var/log/eb-activity.log"
-    ]
-    log_files = [
-        nsemana+"-apache_access_pro.log", 
-        nsemana+"-apache_error_pro.log",
-        nsemana+"-symfony_pro.log",
-        nsemana+"-eb_activity_pro.log",
-        nsemana+"-apache_access_pre.log",
-        nsemana+"-apache_error_pre.log",
-        nsemana+"-symfony_pre.log",
-        nsemana+"-eb_activity_pre.log"
-    ]
-    map_groups_files = dict(zip(cwl_groups,log_files))
-
+    
     s3 = boto3.resource('s3')
 
-    for grp in map_groups_files.keys():
-        os_file = osprefix+map_groups_files[grp]
-        s3_obj = s3prefix+map_groups_files[grp]
-        CWL2file(grp, Desde_secs, Hasta_secs, os_file)
+    for grp in Log_streams.keys():
+        os_file = osprefix+Log_streams[grp]
+        s3_obj = s3prefix+Ayer+"-"+Log_streams[grp]
+        CWL2file(grp, Desde, Hasta, os_file)
         existe = os.path.isfile(os_file)
         if existe:
             s3.meta.client.upload_file(os_file,s3bucket,s3_obj)
             os.remove(os_file)
 
-lambda_handler("EVENTO","KK")    
 
-# Desde_secs = int(Desde.timestamp())
-# Hasta_secs = int(Hasta.timestamp())
-
-# escrito = CWL2file("RDSOSMetrics",Desde_secs,Hasta_secs,\
-#     "/tmp/prueba_CWL2file2")
-# print(escrito)

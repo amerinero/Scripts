@@ -1,0 +1,14 @@
+{
+    "log_streams": 
+    {
+        "/aws/elasticbeanstalk/koiboxcrm-prod/var/log/httpd/access_log": "apache_access_pro.log",
+        "/aws/elasticbeanstalk/koiboxcrm-prod/var/log/httpd/error_log": "apache_error_pro.log",
+        "/aws/elasticbeanstalk/prod/var/app/current/var/logs/prod.log": "symfony_pro.log",
+        "/aws/elasticbeanstalk/koiboxcrm-prod/var/log/eb-activity.log": "eb_activity_pro.log"
+    },
+    "s3_params":
+    {
+        "S3Bucket": "registros-logs-koibox",
+        "S3Prefix": "autoescalado/pro/"
+    }
+}
