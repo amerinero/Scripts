@@ -1,0 +1,105 @@
+#!/bin/bash
+#
+# Create DEV environment
+#
+# Author: Francisco Béjar
+#
+# Version: 1.0 (Feb 2019)
+#
+
+# We verify it's running as root
+if [ $EUID != 0 ]; then
+    echo "Please run as root user"
+    exit
+fi
+
+if [ "$#" -ne 2 ]; then
+  echo "Usage: $0 ENV SITE" >&2
+  exit 1
+fi
+
+devEnv=$1
+siteName=$2
+
+site='led-dev'-$siteName-$devEnv
+server_name='led-dev'-$siteName-$devEnv
+
+confFile=/etc/nginx/conf.d/sites.conf
+newPool=/etc/php-fpm.d/$site-php-fpm.conf
+dataDir=/srv
+templates=$dataDir/tools/templates
+phpTemplate=$templates/php-fpm_template.conf
+envDir=$dataDir/envs
+httpdConf=$envDir/$devEnv/httpd
+httpdLogs=$dataDir/logs/httpd/$site
+sitesDir=$envDir/$devEnv/sites
+sitePath=$sitesDir/$siteName
+commonDir=$sitesDir/common
+siteDocRoot=$sitesDir/$siteName/html
+siteBaseDir=$sitePath:$commonDir
+user=nginx
+
+if [ ! -d "$httpdConf" ]; then
+  mkdir -p $httpdConf
+  echo "include $httpdConf/*.conf;" >> $confFile
+fi
+
+if [ ! -d "$commonDir" ]; then
+  mkdir -p  $commonDir
+fi
+
+mkdir -p $httpdLogs
+
+mkdir -p $sitePath/tmp
+mkdir -p $sitePath/cache
+mkdir -p $sitePath/logs
+mkdir -p $siteDocRoot
+
+cp $templates/httpd_template.conf $httpdConf/$siteName.conf
+
+# Personalizar template HTTP
+read  -p "Do you want to enable LED WordPress configuration?:[Y/N] " wordpress
+access_log=$httpdLogs/$site-access.log
+error_log=$httpdLogs/$site-error.log
+
+sed -i "s@localhost@$server_name@g" $httpdConf/$siteName.conf
+sed -i "s@doc_root@$siteDocRoot@g" $httpdConf/$siteName.conf
+sed -i "s@accessLog@$access_log@g" $httpdConf/$siteName.conf
+sed -i "s@errorLog@$error_log@g" $httpdConf/$siteName.conf
+sed -i "s@php_socket@$site@g" $httpdConf/$siteName.conf
+
+if [[ $wordpress =~ ^[Yy]$ ]]
+then
+  sed -i "s@\#include@include@g" $httpdConf/$siteName.conf    
+  sed -i "s/\_url=\$uri&\$args/\$args/g" $httpdConf/$siteName.conf
+fi
+
+# Personalizar template PHP
+phpConf=$(sed "s/site-name/$site/g" $phpTemplate)
+phpConf=$(sed "s/site-socket/$site/g" <<< "$phpConf")
+phpConf=$(sed "s@www-error@$httpdLogs/$site-php-fpm-error.log@g" <<< "$phpConf")
+phpConf=$(sed "s@base-dir@$siteBaseDir@g" <<< "$phpConf")
+phpConf=$(sed "s@doc-root@$siteDocRoot@g" <<< "$phpConf")
+phpConf=$(sed "s@tmp-dir@$sitePath/tmp@g" <<< "$phpConf")
+
+# Creamos el pool de PHP
+echo "$phpConf" >> $newPool
+
+# Aplicamos permisos
+
+chown -R $SUDO_USER $commonDir
+chown -R $SUDO_USER $sitePath
+chown -R $SUDO_USER $httpdConf/*
+chown $user $sitePath/tmp
+chown $user $sitePath/cache
+chown $user $sitePath/logs
+chmod g+w $sitePath/tmp $sitePath/cache $sitePath/logs $sitePath/html
+chmod -R g+w $sitePath $commonDir
+
+# Aplicamos SELinux context
+restorecon -R $sitePath
+
+# Reiniciamos servicios
+systemctl reload php-fpm.service
+systemctl reload nginx
+

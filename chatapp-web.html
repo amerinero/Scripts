@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="es">
+<head>
+<title>ChatStat Web</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+
+
+<h2>ChatStat Web</h2>
+
+Desde: 
+<input type="date" name="desde_date" id="desde_date" value="2019-11-01" onchange="f_onchange()">
+Hasta: 
+<input type="date" name="hasta_date" id="hasta_date" value="2019-12-05" onchange="f_onchange()">
+Foro (Tabla): 
+<select name="tabla" id="tabla_select" onchange="f_onchange()">
+	<option value="ChorizosCountry">ChorizosCountry</option>
+	<option value="FalconGroup">FalconGroup</option>
+</select>
+<hr>
+
+<p id="desde_p"> </p>
+<p id="hasta_p"> </p>
+<p id="tabla"> </p>
+<p id="resultadoslambda"> </p>
+
+<script>
+
+</script>
+
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.92.0.min.js"></script>
+<script type="text/javascript">
+	AWS.config.region = 'eu-west-1'; // Region
+	AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    	IdentityPoolId: 'eu-west-1:b37042fc-e583-4635-ab96-2db3cca8961d',
+	});
+	lambda = new AWS.Lambda({region: 'eu-west-1', apiVersion: '2015-03-31'});
+	var lambdaParams = {
+		FunctionName : 'get-stats-web',
+		InvocationType : 'RequestResponse',
+		LogType : 'None',
+		Payload : ''
+	};
+	function f_onchange() {
+		var event = new Object();
+		var a = document.getElementById("desde_date").value;
+		document.getElementById("desde_p").innerHTML = "Desde: " + a;
+		event.desde = a;
+
+		var b = document.getElementById("hasta_date").value;
+		document.getElementById("hasta_p").innerHTML = "Hasta: " + b;
+		event.hasta = b;
+
+		var x = document.getElementById("tabla_select").value;
+		document.getElementById("tabla").innerHTML = "Tabla seleccionada: " + x;
+		event.tabla = x;
+		event.bucket = "amerinero-web-app01"
+		lambdaParams.Payload = JSON.stringify(event);
+		invocamos();
+		}
+	function invocamos() {
+		lambda.invoke(lambdaParams, function(err, data) {
+		if (err) {
+			prompt(err);
+		} else {
+			// var salida = String(data.Payload);
+			// var salida1 = salida.replace(/\\n/g, '<br>');
+			// var salida_html = salida1.replace(/\\t/g, '&nbsp&nbsp&nbsp&nbsp')
+			document.getElementById("resultadoslambda").innerHTML = data.Payload; 
+			}
+		});
+	}
+</script>
+
+
+</body>
+</html>

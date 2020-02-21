@@ -1,0 +1,35 @@
+server {
+    listen       80;
+    server_name  localhost;
+
+    root doc_root;
+
+    access_log  accessLog  main;
+    error_log errorLog;
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # pass the PHP scripts to FastCGI server.
+    
+    location ~ \.php$ {
+        fastcgi_pass   unix:/var/run/php-fpm/php_socket.sock;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        include        fastcgi_params;
+    }
+
+    # Include WordPress config
+    #include wordpress.conf;
+}
+
